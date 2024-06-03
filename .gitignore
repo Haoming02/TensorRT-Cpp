@@ -1,0 +1,14 @@
+.vs
+.vscode
+
+Upscale/*
+x64/*
+
+*.png
+*.sln
+*vcxproj*
+
+*.trt
+*.onnx
+
+json.hpp

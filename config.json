@@ -1,0 +1,7 @@
+{
+    "modelPath": "4xNomos8kDAT.trt",
+    "inputResolution": 128,
+    "overlap": 16,
+    "upscaleRatio": 4,
+    "deviceID": 0
+}
