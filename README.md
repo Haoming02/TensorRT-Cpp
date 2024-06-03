@@ -21,7 +21,7 @@ An example program that implements the **[NVIDIA TensorRT](https://developer.nvi
 3. Extract the `trtexec.exe` program included in the SDK
 4. Convert the `.onnx` model into a `.trt` engine:
     ```bash
-    trtexec --onnx=4xNomos8kDAT.onnx --saveEngine=4xNomos8kDAT.trt --shapes=input:1x3x192x192 --inputIOFormats=fp32:chw --outputIOFormats=fp32:chw
+    trtexec --onnx=4xNomos8kDAT.onnx --saveEngine=4xNomos8kDAT.trt --shapes=input:1x3x128x128 --inputIOFormats=fp32:chw --outputIOFormats=fp32:chw
     ```
     - <ins><b>Parameters</b></ins>
         - **--onnx:** Path to the downloaded model
@@ -43,6 +43,7 @@ If you simply want to run the program:
 1. Download the built `.exe` from [Releases](https://github.com/Haoming02/TensorRT-Cpp/releases)
 2. Place the `config.json` next to the `.exe`
 3. Place the `opencv_world<ver>.dll` from **OpenCV** next to the `.exe`
+    > `<path to opencv>\build\x64\vc16\bin\opencv_world<ver>.dll`
 4. Double click to launch the `.exe`
 5. Enter a path to an image
 
@@ -71,6 +72,7 @@ If you want to build from source:
     - `<path to TensorRT>\lib\*.lib`
     - `<path to CUDA>\v12.3\lib\x64\*.lib`
 9. Place the `opencv_world<ver>.dll` from **OpenCV** in the project directory
+    > `<path to opencv>\build\x64\vc16\bin\opencv_world<ver>.dll`
 10. Build
 
 ## Benchmark
