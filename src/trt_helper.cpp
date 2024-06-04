@@ -10,7 +10,16 @@ class Logger : public ILogger {
   }
 } nvLogger;
 
+static void printVersion() {
+  const unsigned int major = NV_TENSORRT_VERSION / 10000L;
+  const unsigned int minor = (NV_TENSORRT_VERSION % 10000L) / 100L;
+  const unsigned int patch = (NV_TENSORRT_VERSION % 100L) / 1L;
+  cout << "TensorRT Version: " << major << "." << minor << "." << patch << endl;
+}
+
 unique_ptr<char[]> loadEngine(const string &filename, size_t &engineSize) {
+  printVersion();
+
   ifstream file(filename, ios::binary | ios::ate);
   if (!file.is_open()) {
     cerr << "Failed to open engine file..." << endl;
@@ -26,6 +35,10 @@ unique_ptr<char[]> loadEngine(const string &filename, size_t &engineSize) {
     exit(EXIT_FAILURE);
   }
 
+  cout << "Loaded Engine of Size: ";
+  cout << engineSize / 1000.0L / 1000.0L << "MB" << endl;
+  cout << "from: " << filename << "\n" << endl;
+
   return buffer;
 }
 
@@ -38,8 +51,7 @@ void createContext(const unique_ptr<char[]> &engineData,
     exit(EXIT_FAILURE);
   }
 
-  engine =
-      runtime->deserializeCudaEngine(engineData.get(), engineSize, nullptr);
+  engine = runtime->deserializeCudaEngine(engineData.get(), engineSize);
   if (!engine) {
     cerr << "Failed to deserialize CUDA engine..." << endl;
     exit(EXIT_FAILURE);

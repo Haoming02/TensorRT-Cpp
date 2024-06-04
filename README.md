@@ -6,11 +6,11 @@ An example program that implements the **[NVIDIA TensorRT](https://developer.nvi
 
 #### Requirements
 0. An Nvidia **RTX** GPU
-1. Install the [TensorRT SDK](https://developer.nvidia.com/tensorrt-download)
+1. Install the [TensorRT 10.0 SDK](https://developer.nvidia.com/tensorrt-download)
     > An Nvidia Developer account is needed
-2. Install [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit)
+2. Install [CUDA Toolkit 12.4](https://developer.nvidia.com/cuda-toolkit)
     > Be sure to download the one corresponding to your TensorRT version
-3. Install [OpenCV](https://github.com/opencv/opencv/releases)
+3. Install [OpenCV 4.10.0](https://github.com/opencv/opencv/releases)
 
 #### Model
 > This example program is built for super-resolution
@@ -42,8 +42,8 @@ If you simply want to run the program:
 
 1. Download the built `.exe` from [Releases](https://github.com/Haoming02/TensorRT-Cpp/releases)
 2. Place the `config.json` next to the `.exe`
-3. Place the `opencv_world<ver>.dll` from **OpenCV** next to the `.exe`
-    > `<path to opencv>\build\x64\vc16\bin\opencv_world<ver>.dll`
+3. Place the `opencv_world4100.dll` from **OpenCV** next to the `.exe`
+    > `<path to opencv>\build\x64\vc16\bin\opencv_world4100.dll`
 4. Double click to launch the `.exe`
 5. Enter a path to an image
 
@@ -70,9 +70,9 @@ If you want to build from source:
 8. `Linker` -> `Input` -> `Additional Dependencies` -> `Edit` -> Add **3** Entries:
     - `<path to opencv>\build\x64\vc16\lib\*.lib`
     - `<path to TensorRT>\lib\*.lib`
-    - `<path to CUDA>\v12.3\lib\x64\*.lib`
-9. Place the `opencv_world<ver>.dll` from **OpenCV** in the project directory
-    > `<path to opencv>\build\x64\vc16\bin\opencv_world<ver>.dll`
+    - `<path to CUDA>\v12.4\lib\x64\*.lib`
+9. Place the `opencv_world4100.dll` from **OpenCV** in the project directory
+    > `<path to opencv>\build\x64\vc16\bin\opencv_world4100.dll`
 10. Build
 
 ## Benchmark
@@ -90,9 +90,11 @@ If you want to build from source:
 > <b>*</b> I don't know the tiling settings of ComfyUI...
 
 ## Roadmap
-- [ ] Upgrade to TensorRT 10
+- [X] Upgrade to TensorRT 10
+- [X] Upgrade to OpenCV 4.10.0
 - [ ] Support Batch Size > 1
 - [ ] Support Folder Processing
+- [ ] Support Half Precision
 
 <hr>
 

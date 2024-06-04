@@ -23,6 +23,15 @@ Config parseConfig(const string &configPath) {
     config.upscaleRatio = jsonData.at("upscaleRatio").get<int>();
     config.deviceID = jsonData.at("deviceID").get<int>();
 
+    cout << "[Upscale Config]" << endl;
+    cout << "Tile Resolution:"
+         << "\t" << config.inputResolution << endl;
+    cout << "Tile Overlap:"
+         << "\t\t" << config.overlap << endl;
+    cout << "Ratio:"
+         << "\t\t\t" << config.upscaleRatio << "\n"
+         << endl;
+
     return config;
   } catch (...) {
     cerr << "Failed to parse config..." << endl;
