@@ -1,5 +1,6 @@
 #include "config_loader.h"
 #include "image_io.h"
+#include "path_util.h"
 #include "trt_helper.h"
 
 #include <cmath>
@@ -71,7 +72,9 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  const string configPath = (argc == 3) ? argv[2] : "config.json";
+  const string configPath =
+      (argc < 3) ? combinePaths(getExecutableDirectory(), "config.json")
+                 : argv[2];
   const Config config = parseConfig(configPath);
 
   cudaSetDevice(config.deviceID);

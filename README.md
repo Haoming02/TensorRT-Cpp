@@ -6,10 +6,10 @@ An example program that implements the **[NVIDIA TensorRT](https://developer.nvi
 
 #### Requirements
 0. An Nvidia **RTX** GPU
-1. Install the [TensorRT 10.0 SDK](https://developer.nvidia.com/tensorrt-download)
+1. Install the [TensorRT 10.0 SDK](https://developer.nvidia.com/tensorrt/download)
     > An Nvidia Developer account is needed
-2. Install [CUDA Toolkit 12.4](https://developer.nvidia.com/cuda-toolkit)
-    > Be sure to download the one corresponding to your TensorRT version
+2. Install [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit-archive)
+    > Be sure to download the release supported by your TensorRT version
 3. Install [OpenCV 4.10.0](https://github.com/opencv/opencv/releases)
 
 #### Model
@@ -19,23 +19,25 @@ An example program that implements the **[NVIDIA TensorRT](https://developer.nvi
 1. Expand the `Advanced tag selector`, and filter the **Platform** to `ONNX` format
 2. Download a model of choice
 3. Extract the `trtexec.exe` program included in the SDK
-4. Convert the `.onnx` model into a `.trt` engine:
-    ```bash
-    trtexec --onnx=4xNomos8kDAT.onnx --saveEngine=4xNomos8kDAT.trt --shapes=input:1x3x128x128 --inputIOFormats=fp32:chw --outputIOFormats=fp32:chw
-    ```
+4. Convert the `.onnx` model into a `.trt` engine
+    - <ins><b>Example</b></ins>
+        ```bash
+        trtexec --onnx=4xNomos8kDAT.onnx --saveEngine=4xNomos8kDAT.trt --shapes=input:1x3x128x128 --inputIOFormats=fp32:chw --outputIOFormats=fp32:chw
+        ```
     - <ins><b>Parameters</b></ins>
         - **--onnx:** Path to the downloaded model
         - **--saveEngine:** Path to save the converted engine
-        - **--shapes:** The shape of the model's input. The first number is batch size *(currently only supports `1`)*; the second number is the channel count *(`3` for RGB)*; the third and forth numbers are the `Training HR size` of your model. You may also need to change the input name.
+        - **--shapes:** The shape of the model's input. The first number is batch size *(this currently only supports `1`)*; the second number is the channel count *(this currently only supports `3` for RGB)*; the third and forth numbers are the `Training HR size` of your model. You may also need to change the name of the input layer.
         - **--inputIOFormats:** This example program only supports `fp32:chw`
         - **--outputIOFormats:** Same as above
 
 5. Modify the `config.json` file according to your model
-    - **modelPath:** Absolute/Relative path to the converted engine
+    - **modelPath:** Absolute path to the converted engine
+        > Use **absolute path** so it can load the engine regardless of working directory
     - **inputResolution:** The `Training HR size` of your model
     - **overlap:** The overlap between each tile *(If set to `0`, it might cause visible seams)*
     - **upscaleRatio:** The `Scale` of your model
-    - **deviceID:** The ID of your CUDA capable device *(`0` if you only have one GPU)*
+    - **deviceID:** The ID of your CUDA-capable device *(`0` if you only have one GPU)*
 
 #### Deployment
 If you simply want to run the program:
@@ -76,7 +78,8 @@ If you want to build from source:
 10. Build
 
 ## Benchmark
-> Running `4xNomos8kDAT` with input size of `128` and overlap of `16`* on a RTX 3060:
+Running `4xNomos8kDAT` with input size of `128` and overlap of `16`* on a RTX 3060:
+
 - Upscale a `512x512` image:
     - Using [ComfyUI](https://github.com/comfyanonymous/ComfyUI): ~11.6s
     - Using [Forge](https://github.com/lllyasviel/stable-diffusion-webui-forge): ~12.8s
@@ -92,8 +95,8 @@ If you want to build from source:
 ## Roadmap
 - [X] Upgrade to TensorRT 10
 - [X] Upgrade to OpenCV 4.10.0
-- [ ] Support Batch Size > 1
 - [ ] Support Folder Processing
+- [ ] Support Batch Size > 1
 - [ ] Support Half Precision
 
 <hr>
