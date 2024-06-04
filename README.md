@@ -77,6 +77,8 @@ If you want to build from source:
     > `<path to opencv>\build\x64\vc16\bin\opencv_world4100.dll`
 10. Build
 
+> For other OS, you will need to modify [`path_util.h`](https://github.com/Haoming02/TensorRT-Cpp/blob/main/src/path_util.h) using platform-specific implementation
+
 ## Benchmark
 Running `4xNomos8kDAT` with input size of `128` and overlap of `16`* on a RTX 3060:
 
