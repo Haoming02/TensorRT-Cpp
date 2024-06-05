@@ -1,7 +1,8 @@
 {
-    "modelPath": "4xNomos8kDAT.trt",
-    "inputResolution": 128,
-    "overlap": 16,
-    "upscaleRatio": 4,
+    "modelPath": "WD14.trt",
+    "tagsPath": "selected_tags.csv",
+    "width": 448,
+    "height": 448,
+    "threshold": 0.5,
     "deviceID": 0
 }

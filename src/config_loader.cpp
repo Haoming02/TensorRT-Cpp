@@ -18,19 +18,11 @@ Config parseConfig(const string &configPath) {
 
     Config config;
     config.modelPath = jsonData.at("modelPath").get<string>();
-    config.inputResolution = jsonData.at("inputResolution").get<int>();
-    config.overlap = jsonData.at("overlap").get<int>();
-    config.upscaleRatio = jsonData.at("upscaleRatio").get<int>();
+    config.tagsPath = jsonData.at("tagsPath").get<string>();
+    config.width = jsonData.at("width").get<int>();
+    config.height = jsonData.at("height").get<int>();
+    config.threshold = jsonData.at("threshold").get<float>();
     config.deviceID = jsonData.at("deviceID").get<int>();
-
-    cout << "[Upscale Config]" << endl;
-    cout << "Tile Resolution:"
-         << "\t" << config.inputResolution << endl;
-    cout << "Tile Overlap:"
-         << "\t\t" << config.overlap << endl;
-    cout << "Ratio:"
-         << "\t\t\t" << config.upscaleRatio << "\n"
-         << endl;
 
     return config;
   } catch (...) {

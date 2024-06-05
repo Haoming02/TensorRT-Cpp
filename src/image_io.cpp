@@ -1,48 +1,29 @@
 #include "image_io.h"
-#include "image_processing.h"
 
 using namespace std;
 using namespace cv;
 
-vector<unique_ptr<float[]>> loadImage(const string &imagePath,
-                                      const int splitDim, const int overlap,
-                                      int &originalWidth, int &originalHeight,
-                                      int &rows, int &cols) {
+unique_ptr<float[]> loadImage(const string &imagePath, const int height,
+                              const int width) {
   Mat image = imread(imagePath, IMREAD_COLOR);
 
   if (image.empty()) {
     cerr << "Failed to open image..." << endl;
     exit(EXIT_FAILURE);
-  } else {
-    cout << "Loaded Image of Size: ";
-    cout << image.size << endl;
-    originalWidth = image.size().width;
-    originalHeight = image.size().height;
   }
 
-  vector<Mat> subImages = splitImage(image, splitDim, overlap, rows, cols);
+  resize(image, image, Size(height, width));
 
-  vector<unique_ptr<float[]>> imageData;
+  vector<Mat> channels(3);
+  split(image, channels);
 
-  for (const Mat &subimage : subImages)
-    imageData.push_back(image2float(subimage, splitDim));
+  unique_ptr<float[]> result = make_unique<float[]>(3 * height * width);
 
-  return imageData;
-}
+  for (int y = 0; y < height; ++y)
+    for (int x = 0; x < width; ++x)
+      for (int c = 0; c < 3; ++c)
+        result[y * width * 3 + x * 3 + c] =
+            static_cast<float>(channels[c].at<unsigned char>(y, x));
 
-void saveImage(float **imageData, const std::string &savePath,
-               const int mergeDim, const int overlap, const int upscaledWidth,
-               const int upscaledHeight, const int rows, const int cols) {
-  vector<Mat> subImages;
-
-  for (int i = 0; i < rows * cols; ++i)
-    subImages.push_back(float2image(imageData[i], mergeDim));
-
-  Mat combinedImage = mergeImage(subImages, mergeDim, overlap, upscaledWidth,
-                                 upscaledHeight, rows, cols);
-
-  combinedImage *= 255.0;
-  combinedImage.convertTo(combinedImage, CV_8UC3);
-
-  imwrite(savePath, combinedImage);
+  return result;
 }

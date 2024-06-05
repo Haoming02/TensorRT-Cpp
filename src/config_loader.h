@@ -7,9 +7,10 @@
 
 struct Config {
   std::string modelPath;
-  int inputResolution;
-  int overlap;
-  int upscaleRatio;
+  std::string tagsPath;
+  int width;
+  int height;
+  float threshold;
   int deviceID;
 };
 

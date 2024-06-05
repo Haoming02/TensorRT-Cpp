@@ -5,6 +5,8 @@ Upscale/*
 x64/*
 
 *.png
+*.csv
+*.txt
 *.sln
 *vcxproj*
 
@@ -12,3 +14,4 @@ x64/*
 *.onnx
 
 json.hpp
+rapidcsv.h

@@ -18,7 +18,7 @@ static void printVersion() {
 }
 
 unique_ptr<char[]> loadEngine(const string &filename, size_t &engineSize) {
-  printVersion();
+  // printVersion();
 
   ifstream file(filename, ios::binary | ios::ate);
   if (!file.is_open()) {
@@ -35,9 +35,9 @@ unique_ptr<char[]> loadEngine(const string &filename, size_t &engineSize) {
     exit(EXIT_FAILURE);
   }
 
-  cout << "Loaded Engine of Size: ";
-  cout << engineSize / 1000.0L / 1000.0L << "MB" << endl;
-  cout << "from: " << filename << "\n" << endl;
+  // cout << "Loaded Engine of Size: ";
+  // cout << engineSize / 1000.0L / 1000.0L << "MB" << endl;
+  // cout << "from: " << filename << "\n" << endl;
 
   return buffer;
 }

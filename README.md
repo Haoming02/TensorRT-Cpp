@@ -13,30 +13,21 @@ An example program that implements the **[NVIDIA TensorRT](https://developer.nvi
 3. Install [OpenCV 4.10.0](https://github.com/opencv/opencv/releases)
 
 #### Model
-> This example program is built for super-resolution
+> This example program is built for image-captioning via WD14 tagger
 
-0. Go to [OpenModelDB](https://openmodeldb.info/)
-1. Expand the `Advanced tag selector`, and filter the **Platform** to `ONNX` format
-2. Download a model of choice
-3. Extract the `trtexec.exe` program included in the SDK
-4. Convert the `.onnx` model into a `.trt` engine
-    - <ins><b>Example</b></ins>
-        ```bash
-        trtexec --onnx=4xNomos8kDAT.onnx --saveEngine=4xNomos8kDAT.trt --shapes=input:1x3x128x128 --inputIOFormats=fp32:chw --outputIOFormats=fp32:chw
-        ```
-    - <ins><b>Parameters</b></ins>
-        - **--onnx:** Path to the downloaded model
-        - **--saveEngine:** Path to save the converted engine
-        - **--shapes:** The shape of the model's input. The first number is batch size *(this currently only supports `1`)*; the second number is the channel count *(this currently only supports `3` for RGB)*; the third and forth numbers are the `Training HR size` of your model. You may also need to change the name of the input layer.
-        - **--inputIOFormats:** This example program only supports `fp32:chw`
-        - **--outputIOFormats:** Same as above
-
-5. Modify the `config.json` file according to your model
+- **Model Used:** https://huggingface.co/SmilingWolf/wd-swinv2-tagger-v3
+    > Download **both** the `.onnx` and the `.csv`
+- **Convert to Engine**
+    ```bash
+    trtexec --onnx=model.onnx --saveEngine=WD14.trt --fp16
+    ```
+- Modify the `config.json` file according to your model
     - **modelPath:** Absolute path to the converted engine
         > Use **absolute path** so it can load the engine regardless of working directory
-    - **inputResolution:** The `Training HR size` of your model
-    - **overlap:** The overlap between each tile *(If set to `0`, it might cause visible seams)*
-    - **upscaleRatio:** The `Scale` of your model
+    - **tagsPath:** Absolute path to the tag CSV
+    - **width:** Should be 448
+    - **height:** Should be 448
+    - **threshold:** Score needed for a tag to count *(`lower` threshold = **more** tags)*
     - **deviceID:** The ID of your CUDA-capable device *(`0` if you only have one GPU)*
 
 #### Deployment
@@ -63,36 +54,22 @@ If you want to build from source:
 2. Create a `C++ Console App`
 3. Use `Add` -> `Existing items...` to include all the scripts
 4. Download the [Json for C++](https://github.com/nlohmann/json/releases) package, and add the single-file `json.hpp`
-5. Configure the solution to `Release` *(instead of `Debug`)*
-6. `Right Click` the Project -> `Properties`
-7. `C/C++` -> `Additional Include Directories` -> `Edit` -> Add **3** Entries:
+5. Download the [CSV for C++](https://github.com/d99kris/rapidcsv) package, and add the single-file `rapidcsv.h`
+6. Configure the solution to `Release` *(instead of `Debug`)*
+7. `Right Click` the Project -> `Properties`
+8. `C/C++` -> `Additional Include Directories` -> `Edit` -> Add **3** Entries:
     - `<path to TensorRT>\lib\include`
     - `<path to CUDA>\<version>\include`
     - `<path to opencv>\build\include`
-8. `Linker` -> `Input` -> `Additional Dependencies` -> `Edit` -> Add **3** Entries:
+9. `Linker` -> `Input` -> `Additional Dependencies` -> `Edit` -> Add **3** Entries:
     - `<path to opencv>\build\x64\vc16\lib\*.lib`
     - `<path to TensorRT>\lib\*.lib`
     - `<path to CUDA>\v12.4\lib\x64\*.lib`
-9. Place the `opencv_world4100.dll` from **OpenCV** in the project directory
+10. Place the `opencv_world4100.dll` from **OpenCV** in the project directory
     > `<path to opencv>\build\x64\vc16\bin\opencv_world4100.dll`
-10. Build
+11. Build
 
 > For other OS, you will need to modify [`path_util.h`](https://github.com/Haoming02/TensorRT-Cpp/blob/main/src/path_util.h) using platform-specific implementation
-
-## Benchmark
-Running `4xNomos8kDAT` with input size of `128` and overlap of `16`* on a RTX 3060:
-
-- Upscale a `512x512` image:
-    - Using [ComfyUI](https://github.com/comfyanonymous/ComfyUI): ~11.6s
-    - Using [Forge](https://github.com/lllyasviel/stable-diffusion-webui-forge): ~12.8s
-    - Using **TensorRT**: ~6.2s
-
-- Upscale a `1024x1024` image:
-    - Using [ComfyUI](https://github.com/comfyanonymous/ComfyUI): ~36.5s
-    - Using [Forge](https://github.com/lllyasviel/stable-diffusion-webui-forge): ~36.9s
-    - Using **TensorRT**: ~19.24s
-
-> <b>*</b> I don't know the tiling settings of ComfyUI...
 
 ## Roadmap
 - [X] Upgrade to TensorRT 10
