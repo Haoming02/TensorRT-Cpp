@@ -1,15 +1,31 @@
 #ifndef IMAGE_IO_H
 #define IMAGE_IO_H
 
+#include "path_util.h"
+
+#include <filesystem>
+#include <fstream>
 #include <opencv2/opencv.hpp>
 #include <vector>
 
-std::vector<std::unique_ptr<float[]>>
-loadImage(const std::string &imagePath, const int splitDim, const int overlap,
-          int &originalWidth, int &originalHeight, int &rows, int &cols);
+struct Image {
+  cv::Mat mat;
+  std::string path;
 
-void saveImage(float **outputData, const std::string &savePath,
-               const int mergeDim, const int overlap, const int upscaledWidth,
-               const int upscaledHeight, const int rows, const int cols);
+  Image(const cv::Mat &m, const std::string &p) : mat(m), path(p){};
+};
+
+struct Caption {
+  std::string tags;
+  std::string path;
+
+  Caption(const std::string &t, const std::string &p) : tags(t), path(p){};
+};
+
+std::vector<Image> loadImage(const std::string &path);
+
+void saveImage(const std::vector<Image> &images, const std::string &suffix);
+
+void saveCaption(const std::vector<Caption> &captions, const std::string &ext);
 
 #endif

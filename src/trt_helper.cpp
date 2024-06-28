@@ -11,10 +11,11 @@ class Logger : public ILogger {
 } nvLogger;
 
 static void printVersion() {
-  const unsigned int major = NV_TENSORRT_VERSION / 10000L;
-  const unsigned int minor = (NV_TENSORRT_VERSION % 10000L) / 100L;
-  const unsigned int patch = (NV_TENSORRT_VERSION % 100L) / 1L;
-  cout << "TensorRT Version: " << major << "." << minor << "." << patch << endl;
+  const int major = NV_TENSORRT_VERSION / 10000L;
+  const int minor = (NV_TENSORRT_VERSION % 10000L) / 100L;
+  const int patch = (NV_TENSORRT_VERSION % 100L) / 1L;
+  cout << "\n[TensorRT]" << endl;
+  cout << "Version: " << major << '.' << minor << '.' << patch << endl;
 }
 
 unique_ptr<char[]> loadEngine(const string &filename, size_t &engineSize) {
@@ -22,7 +23,7 @@ unique_ptr<char[]> loadEngine(const string &filename, size_t &engineSize) {
 
   ifstream file(filename, ios::binary | ios::ate);
   if (!file.is_open()) {
-    cerr << "Failed to open engine file..." << endl;
+    cerr << "Failed to open model file..." << endl;
     exit(EXIT_FAILURE);
   }
 
@@ -31,19 +32,19 @@ unique_ptr<char[]> loadEngine(const string &filename, size_t &engineSize) {
 
   unique_ptr<char[]> buffer = make_unique<char[]>(engineSize);
   if (!file.read(buffer.get(), engineSize)) {
-    cerr << "Failed to read engine file..." << endl;
+    cerr << "Failed to load model file..." << endl;
     exit(EXIT_FAILURE);
   }
 
-  cout << "Loaded Engine of Size: ";
-  cout << engineSize / 1000.0L / 1000.0L << "MB" << endl;
-  cout << "from: " << filename << "\n" << endl;
+  cout << "Loaded Model of Size: ";
+  cout << engineSize / 1000.0f / 1000.0f << " MB" << endl;
+  cout << "from: \"" << filename << "\"\n" << endl;
 
   return buffer;
 }
 
 void createContext(const unique_ptr<char[]> &engineData,
-                   const size_t engineSize, IRuntime *&runtime,
+                   const size_t &engineSize, IRuntime *&runtime,
                    ICudaEngine *&engine, IExecutionContext *&context) {
   runtime = createInferRuntime(nvLogger);
   if (!runtime) {

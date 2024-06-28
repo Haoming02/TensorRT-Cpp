@@ -1,5 +1,5 @@
 #include "config_loader.h"
-#include "json.hpp"
+#include "../3rd-party/json.hpp"
 
 using namespace std;
 using namespace nlohmann;
@@ -17,20 +17,30 @@ Config parseConfig(const string &configPath) {
     configFile >> jsonData;
 
     Config config;
+    config.deviceID = jsonData.at("deviceID").get<int>();
+    config.mode = jsonData.at("mode").get<string>();
     config.modelPath = jsonData.at("modelPath").get<string>();
     config.inputResolution = jsonData.at("inputResolution").get<int>();
-    config.overlap = jsonData.at("overlap").get<int>();
-    config.upscaleRatio = jsonData.at("upscaleRatio").get<int>();
-    config.deviceID = jsonData.at("deviceID").get<int>();
 
-    cout << "[Upscale Config]" << endl;
-    cout << "Tile Resolution:"
-         << "\t" << config.inputResolution << endl;
-    cout << "Tile Overlap:"
-         << "\t\t" << config.overlap << endl;
-    cout << "Ratio:"
-         << "\t\t\t" << config.upscaleRatio << "\n"
-         << endl;
+    if (config.mode == "upscale") {
+      config.overlap = make_unique<int>(jsonData.at("overlap").get<int>());
+      config.upscaleRatio =
+          make_unique<int>(jsonData.at("upscaleRatio").get<int>());
+
+      config.tagsPath = nullptr;
+      config.threshold = nullptr;
+    } else if (config.mode == "caption") {
+      config.overlap = nullptr;
+      config.upscaleRatio = nullptr;
+
+      config.tagsPath =
+          make_unique<string>(jsonData.at("tagsPath").get<string>());
+      config.threshold =
+          make_unique<float>(jsonData.at("threshold").get<float>());
+    } else {
+      cerr << "Unrecognized Mode: \"" << config.mode << "\"... " << endl;
+      exit(EXIT_FAILURE);
+    }
 
     return config;
   } catch (...) {

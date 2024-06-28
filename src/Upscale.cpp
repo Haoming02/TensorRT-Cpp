@@ -1,106 +1,77 @@
-#include "config_loader.h"
-#include "image_io.h"
-#include "path_util.h"
-#include "trt_helper.h"
-
-#include <cmath>
-#include <string>
+#include "upscale.h"
+#include "image_processing.h"
 
 using namespace std;
+using namespace cv;
 
-static string addSuffix(const string &filepath, const string &suffix) {
-  const size_t dotPosition = filepath.find_last_of('.');
-  if (dotPosition == string::npos)
-    return filepath + suffix;
-  else
-    return filepath.substr(0, dotPosition) + suffix +
-           filepath.substr(dotPosition);
-}
+std::vector<Image> processUpscale(const Config &config,
+                                  const std::vector<Image> &inputs,
+                                  nvinfer1::IExecutionContext *&context) {
+  vector<Image> results;
 
-static void process(const Config &config, const string &imagePath,
-                    nvinfer1::IExecutionContext *&context) {
-  int og_w, og_h, rows, cols;
-  vector<unique_ptr<float[]>> imageData =
-      loadImage(imagePath, config.inputResolution, config.overlap, og_w, og_h,
-                rows, cols);
-
-  const unsigned int inputSize = 1 * 3 * pow(config.inputResolution, 2);
-  const unsigned int outputSize = inputSize * pow(config.upscaleRatio, 2);
+  const int inputSize = 1 * 3 * pow(config.inputResolution, 2);
+  const int outputSize = inputSize * pow(*(config.upscaleRatio), 2);
 
   void *buffers[2];
   cudaMalloc(&buffers[0], inputSize * sizeof(float));
   cudaMalloc(&buffers[1], outputSize * sizeof(float));
 
-  const int subImageCount = imageData.size();
-  float **outputData = new float *[subImageCount];
+  for (const auto &image : inputs) {
 
-  for (int i = 0; i < subImageCount; ++i) {
-    cudaMemcpy(buffers[0], imageData[i].get(), inputSize * sizeof(float),
-               cudaMemcpyHostToDevice);
+    const int og_w = image.mat.cols;
+    const int og_h = image.mat.rows;
 
-    context->executeV2(buffers);
-    outputData[i] = new float[outputSize];
+    int rows, cols;
+    vector<Mat> subImages = splitImage(image.mat, config.inputResolution,
+                                       *(config.overlap), rows, cols);
 
-    cudaMemcpy(outputData[i], buffers[1], outputSize * sizeof(float),
-               cudaMemcpyDeviceToHost);
+    vector<unique_ptr<float[]>> inputData;
+    for (const Mat &img : subImages)
+      inputData.push_back(image2floatCHW(img, config.inputResolution));
+
+    const int subImageCount = inputData.size();
+    vector<unique_ptr<float[]>> outputData(subImageCount);
+
+    for (int i = 0; i < subImageCount; ++i) {
+      cudaMemcpy(buffers[0], inputData[i].get(), inputSize * sizeof(float),
+                 cudaMemcpyHostToDevice);
+
+      context->executeV2(buffers);
+      outputData[i] = make_unique<float[]>(outputSize);
+
+      cudaMemcpy(outputData[i].get(), buffers[1], outputSize * sizeof(float),
+                 cudaMemcpyDeviceToHost);
+    }
+
+    subImages.clear();
+
+    for (const auto &img : outputData)
+      subImages.push_back(
+          float2image(img, config.inputResolution * *(config.upscaleRatio)));
+
+    // int id = 0;
+    // for (auto img : subImages) {
+    //   img *= 255.0;
+    //   img.convertTo(img, CV_8UC3);
+    //   results.push_back(Image(img, addSuffix(image.path, to_string(id))));
+    //   id++;
+    // }
+
+    Mat mergedImage =
+        mergeImage(subImages, config.inputResolution * *(config.upscaleRatio),
+                   *(config.overlap) * *(config.upscaleRatio), rows, cols);
+
+    mergedImage *= 255.0;
+    mergedImage.convertTo(mergedImage, CV_8UC3);
+
+    mergedImage = mergedImage(Rect(0, 0, og_w * *(config.upscaleRatio),
+                                   og_h * *(config.upscaleRatio)));
+
+    results.push_back(Image(mergedImage, image.path));
   }
-
-  const string resultPath =
-      addSuffix(imagePath, to_string(config.upscaleRatio) + "x");
-
-  saveImage(outputData, resultPath,
-            config.inputResolution * config.upscaleRatio,
-            config.overlap * config.upscaleRatio, og_w * config.upscaleRatio,
-            og_h * config.upscaleRatio, rows, cols);
 
   cudaFree(buffers[0]);
   cudaFree(buffers[1]);
 
-  for (int i = 0; i < subImageCount; ++i)
-    delete[] outputData[i];
-
-  delete[] outputData;
-}
-
-int main(int argc, char *argv[]) {
-  if (argc > 3) {
-    cerr << "Invalid number of arguments...\nRemember to add quotation marks "
-            "to path with spaces!\n"
-         << endl;
-    cerr << "Usage:\nUpscale.exe \"<path to image>\" \"<path to config>\""
-         << endl;
-    exit(EXIT_FAILURE);
-  }
-
-  const string configPath =
-      (argc < 3) ? combinePaths(getExecutableDirectory(), "config.json")
-                 : argv[2];
-  const Config config = parseConfig(configPath);
-
-  cudaSetDevice(config.deviceID);
-
-  size_t engineSize;
-  unique_ptr<char[]> engineData = loadEngine(config.modelPath, engineSize);
-
-  nvinfer1::IRuntime *runtime;
-  nvinfer1::ICudaEngine *engine;
-  nvinfer1::IExecutionContext *context;
-
-  createContext(move(engineData), engineSize, runtime, engine, context);
-
-  string imagePath;
-  if (argc >= 2)
-    imagePath = argv[1];
-  else {
-    cout << "Path to Image: ";
-    getline(cin, imagePath);
-  }
-
-  process(config, imagePath, context);
-
-  delete context;
-  delete engine;
-  delete runtime;
-
-  return 0;
+  return results;
 }

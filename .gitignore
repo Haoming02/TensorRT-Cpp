@@ -1,14 +1,16 @@
 .vs
 .vscode
 
-Upscale/*
+TensorRT-Cpp/*
 x64/*
 
-*.png
-*.sln
-*vcxproj*
-
+*.dll
+*.csv
 *.trt
 *.onnx
 
-json.hpp
+*.vcxproj.user
+*.vcxproj.filters
+
+3rd-party/json.hpp
+3rd-party/rapidcsv.h

@@ -6,11 +6,16 @@
 #include <string>
 
 struct Config {
+  int deviceID;
+  std::string mode;
   std::string modelPath;
   int inputResolution;
-  int overlap;
-  int upscaleRatio;
-  int deviceID;
+
+  std::unique_ptr<int> overlap;
+  std::unique_ptr<int> upscaleRatio;
+
+  std::unique_ptr<std::string> tagsPath;
+  std::unique_ptr<float> threshold;
 };
 
 Config parseConfig(const std::string &configPath);

@@ -1,48 +1,50 @@
 #include "image_io.h"
-#include "image_processing.h"
 
 using namespace std;
 using namespace cv;
 
-vector<unique_ptr<float[]>> loadImage(const string &imagePath,
-                                      const int splitDim, const int overlap,
-                                      int &originalWidth, int &originalHeight,
-                                      int &rows, int &cols) {
-  Mat image = imread(imagePath, IMREAD_COLOR);
+namespace fs = filesystem;
 
-  if (image.empty()) {
-    cerr << "Failed to open image..." << endl;
-    exit(EXIT_FAILURE);
+vector<Image> loadImage(const string &path) {
+  vector<Image> images;
+
+  if (fs::is_directory(path)) {
+
+    for (const auto &entry : fs::directory_iterator(path)) {
+      string filePath = entry.path().string();
+      Mat mat = imread(filePath, IMREAD_COLOR);
+      if (mat.empty())
+        continue;
+
+      images.push_back(Image(mat, filePath));
+    }
+
   } else {
-    cout << "Loaded Image of Size: ";
-    cout << image.size << endl;
-    originalWidth = image.size().width;
-    originalHeight = image.size().height;
+    Mat mat = imread(path, IMREAD_COLOR);
+
+    if (!mat.empty())
+      images.push_back(Image(mat, path));
   }
 
-  vector<Mat> subImages = splitImage(image, splitDim, overlap, rows, cols);
+  if (images.size() == 0) {
+    cerr << "Failed to read any image..." << endl;
+    exit(EXIT_FAILURE);
+  }
 
-  vector<unique_ptr<float[]>> imageData;
-
-  for (const Mat &subimage : subImages)
-    imageData.push_back(image2float(subimage, splitDim));
-
-  return imageData;
+  return images;
 }
 
-void saveImage(float **imageData, const std::string &savePath,
-               const int mergeDim, const int overlap, const int upscaledWidth,
-               const int upscaledHeight, const int rows, const int cols) {
-  vector<Mat> subImages;
+void saveImage(const vector<Image> &images, const string &suffix) {
+  for (const Image &image : images) {
+    imwrite(addSuffix(image.path, suffix), image.mat);
+  }
+}
 
-  for (int i = 0; i < rows * cols; ++i)
-    subImages.push_back(float2image(imageData[i], mergeDim));
-
-  Mat combinedImage = mergeImage(subImages, mergeDim, overlap, upscaledWidth,
-                                 upscaledHeight, rows, cols);
-
-  combinedImage *= 255.0;
-  combinedImage.convertTo(combinedImage, CV_8UC3);
-
-  imwrite(savePath, combinedImage);
+void saveCaption(const vector<Caption> &captions, const string &ext) {
+  for (const Caption &caption : captions) {
+    ofstream file;
+    file.open(addExtension(caption.path, ext));
+    file << caption.tags;
+    file.close();
+  }
 }

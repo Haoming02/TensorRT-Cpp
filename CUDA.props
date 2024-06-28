@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <opencv>C:\Program Files\opencv\build</opencv>
+    <cuda12>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.3</cuda12>
+    <tensorrt>C:\Program Files\NVIDIA GPU Computing Toolkit\TensorRT\lib</tensorrt>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="opencv">
+      <Value>$(opencv)</Value>
+    </BuildMacro>
+    <BuildMacro Include="cuda12">
+      <Value>$(cuda12)</Value>
+    </BuildMacro>
+    <BuildMacro Include="tensorrt">
+      <Value>$(tensorrt)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
