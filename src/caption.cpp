@@ -8,7 +8,7 @@ struct Data {
   string tag;
   float weight;
 
-  Data(const string &t, const float &w) : tag(t), weight(w){};
+  Data(const string &t, const float w) : tag(t), weight(w){};
 };
 
 static bool sortByWeight(const Data &lhs, const Data &rhs) {
@@ -40,7 +40,7 @@ vector<Caption> processCaption(const Config &config,
                cv::Size(config.inputResolution, config.inputResolution));
 
     unique_ptr<float[]> imageData =
-        image2floatHWC(input, config.inputResolution);
+        image2floatHWC<float>(input, config.inputResolution);
 
     cudaMemcpy(buffers[0], imageData.get(), inputSize * sizeof(float),
                cudaMemcpyHostToDevice);

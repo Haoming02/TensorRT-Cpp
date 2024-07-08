@@ -3,52 +3,87 @@
 using namespace std;
 using namespace cv;
 
-unique_ptr<float[]> image2floatCHW(const Mat &image, const int dim) {
+template <typename precision>
+static precision char2float(const unsigned char value);
+
+template <> float char2float<float>(const unsigned char value) {
+  return static_cast<float>(value) / 255.0f;
+}
+
+template <> __half char2float<__half>(const unsigned char value) {
+  return __float2half(static_cast<float>(value) / 255.0f);
+}
+
+template <typename precision> static float float2float(const float value);
+
+template <> float float2float<float>(const float value) { return value; }
+
+template <> float float2float<__half>(const float value) {
+  return __half2float(value);
+}
+
+template <typename precision>
+unique_ptr<precision[]> image2floatCHW(const Mat &image, const int dim) {
+  unique_ptr<precision[]> result = make_unique<precision[]>(3 * dim * dim);
+
   vector<Mat> channels(3);
   split(image, channels);
-
-  unique_ptr<float[]> result = make_unique<float[]>(3 * dim * dim);
 
   for (int c = 0; c < 3; ++c)
     for (int y = 0; y < dim; ++y)
       for (int x = 0; x < dim; ++x)
         result[c * dim * dim + y * dim + x] =
-            static_cast<float>(channels[2 - c].at<unsigned char>(y, x)) /
-            255.0f;
+            char2float<precision>(channels[2 - c].at<unsigned char>(y, x));
 
   return result;
 }
 
-unique_ptr<float[]> image2floatHWC(const Mat &image, const int dim) {
+template <typename precision>
+unique_ptr<precision[]> image2floatHWC(const Mat &image, const int dim) {
+  unique_ptr<precision[]> result = make_unique<precision[]>(3 * dim * dim);
+
   vector<Mat> channels(3);
   split(image, channels);
-
-  unique_ptr<float[]> result = make_unique<float[]>(3 * dim * dim);
 
   for (int y = 0; y < dim; ++y)
     for (int x = 0; x < dim; ++x)
       for (int c = 0; c < 3; ++c)
         result[y * dim * 3 + x * 3 + c] =
-            static_cast<float>(channels[c].at<unsigned char>(y, x));
+            char2float<precision>(channels[c].at<unsigned char>(y, x));
 
   return result;
 }
 
-Mat float2image(const unique_ptr<float[]> &outputData, const int dim) {
-  vector<Mat> channels{Mat(dim, dim, CV_32F), Mat(dim, dim, CV_32F),
-                       Mat(dim, dim, CV_32F)};
+template <typename precision>
+Mat float2image(const unique_ptr<precision[]> &outputData, const int dim) {
+  vector<Mat> channels = {Mat(dim, dim, CV_32F), Mat(dim, dim, CV_32F),
+                          Mat(dim, dim, CV_32F)};
 
   for (int c = 0; c < 3; ++c)
     for (int y = 0; y < dim; ++y)
       for (int x = 0; x < dim; ++x)
         channels[2 - c].at<float>(y, x) =
-            outputData[c * dim * dim + y * dim + x];
+            float2float<precision>(outputData[c * dim * dim + y * dim + x]);
 
   Mat combinedImage;
   merge(channels, combinedImage);
 
   return combinedImage;
 }
+
+template unique_ptr<float[]> image2floatCHW<float>(const Mat &image,
+                                                   const int dim);
+template unique_ptr<float[]> image2floatHWC<float>(const Mat &image,
+                                                   const int dim);
+template Mat float2image<float>(const unique_ptr<float[]> &outputData,
+                                const int dim);
+
+template unique_ptr<__half[]> image2floatCHW<__half>(const Mat &image,
+                                                     const int dim);
+template unique_ptr<__half[]> image2floatHWC<__half>(const Mat &image,
+                                                     const int dim);
+template Mat float2image<__half>(const unique_ptr<__half[]> &outputData,
+                                 const int dim);
 
 static int _calculatePadding(const int val, const int splitSize,
                              const int overlap, int &count) {

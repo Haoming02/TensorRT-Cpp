@@ -10,6 +10,7 @@ struct Config {
   std::string mode;
   std::string modelPath;
   int inputResolution;
+  bool fp16;
 
   std::unique_ptr<int> overlap;
   std::unique_ptr<int> upscaleRatio;

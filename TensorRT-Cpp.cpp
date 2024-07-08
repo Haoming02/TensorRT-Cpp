@@ -5,6 +5,8 @@
 #include "src/caption.h"
 #include "src/upscale.h"
 
+#include <cuda_fp16.h>
+
 using namespace std;
 
 static void trim(string &str) {
@@ -58,7 +60,11 @@ int main(int argc, char *argv[]) {
   createContext(move(engineData), engineSize, runtime, engine, context);
 
   if (config.mode == "upscale") {
-    vector<Image> outputs = processUpscale(config, inputs, context);
+    vector<Image> outputs;
+    if (config.fp16)
+      outputs = processUpscale<__half>(config, inputs, context);
+    else
+      outputs = processUpscale<float>(config, inputs, context);
     saveImage(outputs, 'x' + to_string(*(config.upscaleRatio)));
   } else {
     vector<Caption> outputs = processCaption(config, inputs, context);

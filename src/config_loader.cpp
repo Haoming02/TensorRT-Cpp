@@ -21,6 +21,7 @@ Config parseConfig(const string &configPath) {
     config.mode = jsonData.at("mode").get<string>();
     config.modelPath = jsonData.at("modelPath").get<string>();
     config.inputResolution = jsonData.at("inputResolution").get<int>();
+    config.fp16 = jsonData.at("fp16").get<bool>();
 
     if (config.mode == "upscale") {
       config.overlap = make_unique<int>(jsonData.at("overlap").get<int>());

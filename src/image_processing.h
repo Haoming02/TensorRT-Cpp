@@ -1,13 +1,21 @@
 #ifndef IMAGE_PROCESSING_H
 #define IMAGE_PROCESSING_H
 
+#include <cuda_fp16.h>
 #include <opencv2/opencv.hpp>
 #include <vector>
 
-std::unique_ptr<float[]> image2floatCHW(const cv::Mat &image, const int dim);
-std::unique_ptr<float[]> image2floatHWC(const cv::Mat &image, const int dim);
+template <typename precision>
+std::unique_ptr<precision[]> image2floatCHW(const cv::Mat &image,
+                                            const int dim);
 
-cv::Mat float2image(const std::unique_ptr<float[]> &outputData, const int dim);
+template <typename precision>
+std::unique_ptr<precision[]> image2floatHWC(const cv::Mat &image,
+                                            const int dim);
+
+template <typename precision>
+cv::Mat float2image(const std::unique_ptr<precision[]> &outputData,
+                    const int dim);
 
 std::vector<cv::Mat> splitImage(const cv::Mat &image, const int inputResolution,
                                 const int overlap, int &rows, int &cols);

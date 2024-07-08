@@ -20,7 +20,7 @@ A simple program that implements the **[NVIDIA TensorRT](https://developer.nvidi
 3. [OpenCV 4.10.0](https://github.com/opencv/opencv/releases/tag/4.10.0)
     > It needs to be exactly this version, unless you're planning to build from source
 
-> Recommended to add the OpenCV `bin` folder to your system **PATH**; otherwise, you have to manually place `opencv_world4100.dll` next to the `.exe`
+> Recommended to add the OpenCV `bin` folder to your system **PATH**; otherwise, you have to manually place `opencv_world4100.dll` next to the `.exe`; TensorRT and CUDA Toolkit `bin` folders should be included in **PATH** already during installation
 
 #### Models
 > For optional arguments during engine conversion, refer to the [trtexec](#trtexec) section
@@ -59,6 +59,7 @@ A simple program that implements the **[NVIDIA TensorRT](https://developer.nvidi
     - **modelPath:** The path to the `.trt` engine
         > Use **absolute** path so it supports drag & drop
     - **inputResolution:** Should be `448` for most tagger models; `64` or `128` for most upscale models
+    - **fp16:** Enable to use half precision **I/O**
 
 - <ins><b>Caption</b></ins>
     - **tagsPath:** The path to the `.csv` tags spreadsheet
@@ -84,9 +85,9 @@ If you want to build from source:
 1. `git` `clone` this repo
 2. Open the `.vcxproj` project
 3. Modify the `CUDA.props` to point to the correct paths
-    > - TensorRT
-    > - CUDA Toolkit
-    > - OpenCV
+    - TensorRT
+    - CUDA Toolkit
+    - OpenCV
 4. Download the [Json for C++](https://github.com/nlohmann/json/releases) package, and add the single-file `json.hpp`
 5. Download the [CSV for C++](https://github.com/d99kris/rapidcsv/releases) package, and add the single-file `rapidcsv.h`
 6. Configure the solution to `Release` *(instead of `Debug`)*
@@ -119,7 +120,7 @@ Running `4xNomos8kDAT` at `fp32`, with input size of `128` and overlap of `16`, 
 - [X] Upgrade to OpenCV 4.10.0
 - [X] Seamless Tiling
 - [X] Support Folder Processing
-- [ ] Support Half Precision
+- [X] Support Half Precision I/O
 - [ ] Support Batch Size
 
 <hr>
@@ -147,7 +148,7 @@ Running `4xNomos8kDAT` at `fp32`, with input size of `128` and overlap of `16`, 
 
 - **--inputIOFormats:** Specify the precision of the inputs and the channel order
 
-    > This example program currently only supports `fp32` inputs and outputs
+    > **upscale** mode supports `fp32` and `fp16` I/O; **caption** mode only supports `fp32` I/O
 
     > Most upscale models are `chw`; the tagger models are `hwc`
 
@@ -172,5 +173,7 @@ Running `4xNomos8kDAT` at `fp32`, with input size of `128` and overlap of `16`, 
 
 - **--best:** Let `trtexec` determine the precision to use for each layer, including `fp8`
     > May cause inaccuracy *(**eg.** generate artifacts for upscale models)*
+
+> **I/O** precision and **Weight** precision are independent
 
 </details>
